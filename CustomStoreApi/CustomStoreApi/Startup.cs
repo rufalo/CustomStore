@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CustomStoreApi.StartUpService;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -23,6 +24,22 @@ namespace CustomStoreApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // Adding Database
+            services.ConfigureDbContext(Configuration);
+
+            // Adding Idenity
+            services.ConfigureIdentity();
+
+            // Authentication Token Jwt
+            services.ConfigureAuthentication(Configuration);
+
+            // Enable Cors
+            services.ConfigureCors();
+
+            // Seed Roles and Users
+            services.ConfigureSeedSettings();
+
+            // Adding the Model View Controller
             services.AddMvc();
         }
 
@@ -34,7 +51,14 @@ namespace CustomStoreApi
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseMvc();
+            app.UseAuthentication();
+
+            app.UseMvc(routes =>
+            {
+                routes.MapRoute(
+                   name: "default",
+                   template: "{controller=Home}/{action=Index}/{id?}");
+            });
         }
     }
 }
